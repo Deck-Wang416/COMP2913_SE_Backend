@@ -1,4 +1,5 @@
-## api.backend.xjco2013
+# PathPals — Backend API
+
 ![golang](https://img.shields.io/badge/Go-00ADD8.svg?style=for-the-badge&logo=Go&logoColor=white)
 ![gin](https://img.shields.io/badge/Gin-008ECF.svg?style=for-the-badge&logo=Gin&logoColor=white)
 ![mysql](https://img.shields.io/badge/MySQL-4479A1.svg?style=for-the-badge&logo=MySQL&logoColor=white)
@@ -6,85 +7,68 @@
 ![rabbitmq](https://img.shields.io/badge/RabbitMQ-FF6600.svg?style=for-the-badge&logo=RabbitMQ&logoColor=white)
 ![docker](https://img.shields.io/badge/Docker-2496ED.svg?style=for-the-badge&logo=Docker&logoColor=white)
 
-SE项目后端仓库
+PathPals is a fitness tracking and social sharing platform developed as a team software engineering project. This repository contains its backend API, built with Go and Gin using a layered architecture.
 
-### 项目结构
+Original team repository: [XJCO2913/API_Backend](https://github.com/XJCO2913/API_Backend).
 
-<img src="./img/repo_tree.png" alt="项目结构" style="zoom:50%; float:left" />
+## Project Structure
 
-#### 1. cmd
+<img src="./img/repo_tree.png" alt="Repository directory structure" width="480" />
 
-cmd是package main所在的目录，也是项目的启动目录。包含main函数，路由的初始化，以及一些项目启动时的必要资源的初始化
+### 1. `cmd`
 
-#### 2. config
+Contains the application entry point (`package main`), including the main function, route registration, and initialization of resources required at startup.
 
-config目录用于存放各类配置文件，如数据库配置文件(包含数据库账号密码等等)，环境变量，JWT加密密钥，docker配置文件等等。
+### 2. `config`
 
-将敏感信息以配置的形式存放，而不是直接写在代码里，提高安全性。（所以这个目录下的文件有一些不会推到仓库里）
+Contains application and deployment configuration, including database settings, environment variables, JWT settings, and Docker configuration. Sensitive configuration files are excluded from version control.
 
-#### 3. middleware
+### 3. `middleware`
 
-middleware负责存放我们编写的中间件，主要是为了在请求到达时做一些鉴权，限流，补充上下文等操作。
+Implements shared request processing such as authentication, rate limiting, and request context management before requests reach the controllers.
 
-#### 4. controller
+### 4. `controller`
 
-再经过中间件之后，请求就来到了controller层，controller层负责接收请求对象后做一些业务逻辑校验，比如有没有缺少必要的请求参数。之后会调用service层的服务。controller层一般不写业务逻辑，只针对请求参数的校验，和对业务数据的包装。
+Handles incoming HTTP requests, validates request parameters, and delegates business operations to the service layer. Controllers also prepare responses for clients.
 
-**dto**
+**DTO (Data Transfer Object)**
 
-dto全称是 data transfer object，用来把请求中的参数包装成结构体，方便管理和传递。
-
-比如请求传入下面这个body
+DTOs represent structured request data. For example, a JSON request such as:
 
 ```json
 {
     "id": 1,
-    "name": "xiaofei",
-    "age": "20"
+    "name": "Alex",
+    "age": 20
 }
 ```
 
-那么我们在代码中就可以定义一个dto，负责对这个请求的包装：
+can be represented by a Go struct:
 
 ```go
-// 一般命名规范为 xxxReq
 type UserReq struct {
-    ID int `json:"id"`
+    ID   int    `json:"id"`
     Name string `json:"name"`
-    Age string `json:"age"`
+    Age  int    `json:"age"`
 }
 ```
 
+### 5. `service`
 
+Contains the core business logic. Services receive structured data from controllers, perform business operations, and pass the corresponding models to the data access layer.
 
-#### 5. Service
+**SDTO (Service Data Transfer Object)**
 
-service层是我们项目中最重型的一层，是业务逻辑的主要体现，所有的业务逻辑大部分都会写在service层中。
+SDTOs transfer data between controllers and services, whereas request DTOs represent data received at the HTTP boundary.
 
-service层接受controller层给它包装好的业务数据，然后进行业务逻辑的处理，最后把业务数据包装成数据库模型传入给dao层
+### 6. `dao`
 
-**sdto**
+The data access object layer encapsulates database operations and separates persistence logic from business logic. Parts of this layer were generated using the framework's scaffolding tools.
 
-sdto == service data transfer object，顾名思义和dto一样，也是对数据的包装。
+### 7. `util`
 
-只不过dto是 http请求 --> controller，而sdto是 controller --> service
+Contains reusable utility functions shared across the application.
 
+## Architecture
 
-
-#### 6. Dao
-
-dao == data access object，这一层封装了对数据库的操作，在我们项目中这一层我是用框架自带的脚手架生成的，很方便
-
-
-
-#### 7. util
-
-这个目录主要用来放一些全局的工具函数
-
-
-
-
-
-### 各层之间交互关系如图
-
-<img src="./img/layer.jpg" alt="layer" style="zoom:30%; float:left" />
+<img src="./img/layer.jpg" alt="Interaction between application layers" width="640" />
